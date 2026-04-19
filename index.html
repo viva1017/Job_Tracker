@@ -279,7 +279,58 @@ function StatsDashboard({ apps }) {
     </div>
   );
 }
+function FunnelAnalysis({ apps }) {
+  const applied = apps.filter(a => a.stage !== "wishlist").length;
+  const assessment = apps.filter(a => a.stage === "assessment" || a.stage === "interview" || a.stage === "offer" || a.stage === "closed").length;
+  const interview = apps.filter(a => a.stage === "interview" || a.stage === "offer" || a.stage === "closed").length;
+  const offer = apps.filter(a => a.stage === "offer").length;
 
+  const rate = (a, b) => b === 0 ? "-" : Math.round((a / b) * 100) + "%";
+
+  const steps = [
+    { label: "投递", value: applied },
+    { label: "笔试", value: assessment, rate: rate(assessment, applied) },
+    { label: "面试", value: interview, rate: rate(interview, assessment) },
+    { label: "Offer", value: offer, rate: rate(offer, interview) },
+  ];
+
+  return (
+    <div className="glass" style={{
+      border: `1px solid ${P.border}`,
+      borderRadius: 20,
+      padding: "18px 20px",
+      marginBottom: 24
+    }}>
+      <div style={{ fontSize: 12, color: P.textMuted, marginBottom: 12 }}>
+        转化分析（Funnel）
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {steps.map((s, i) => (
+          <React.Fragment key={s.label}>
+            <div style={{ textAlign: "center", flex: 1 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, fontFamily: MONO }}>
+                {s.value}
+              </div>
+              <div style={{ fontSize: 11, color: P.textSecondary }}>
+                {s.label}
+              </div>
+              {s.rate && (
+                <div style={{ fontSize: 11, color: P.accent, marginTop: 2 }}>
+                  {s.rate}
+                </div>
+              )}
+            </div>
+
+            {i < steps.length - 1 && (
+              <div style={{ color: P.textMuted }}>→</div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
 function PriorityBadge({ priority, small }) {
   const c = PRIORITY_CONFIG[priority]; if (!c) return null;
   return (
@@ -823,6 +874,7 @@ function JobTracker() {
           </div>
         </div>
         <StatsDashboard apps={apps} />
+        <FunnelAnalysis apps={apps} />
         <FilterBar filter={filter} setFilter={setFilter} sortBy={sortBy} setSortBy={setSortBy} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div style={{ display: "flex", gap: 18, overflowX: "auto", padding: "4px 2px 24px", minHeight: 420 }}>
         {DEFAULT_COLUMNS.map(col => <KanbanColumn key={col.id} column={col} apps={filteredApps.filter(a => a.stage === col.id)} onCardClick={setSelectedApp} onDrop={handleDrop} onDragStart={setDraggingId} onAddClick={handleAdd} />)}
