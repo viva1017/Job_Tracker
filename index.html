@@ -193,7 +193,7 @@ const SAMPLE_DATA = [
   createdAt: Date.now() - 4000,
 }
 function FunnelAnalysis({ apps }) {
-  const applied = apps.length;
+  const applied = apps.filter(a => a.stage !== "wishlist").length;
 
   const interview = apps.filter(a =>
     a.interviewRounds?.some(r => r.name.includes("面"))
