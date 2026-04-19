@@ -169,7 +169,7 @@ const SAMPLE_DATA = [
     closedAt: "",
     createdAt: Date.now() - 3000,
   },
-{
+  {
   id: "5",
   company: "美团",
   role: "用户研究实习生",
@@ -187,100 +187,11 @@ const SAMPLE_DATA = [
     { name: "一面", status: "done", date: "2026-04-18", notes: "研究方法+案例拆解" },
     { name: "二面", status: "done", date: "2026-04-24", notes: "case落地能力被深挖" },
   ],
-  notes: "复盘：方法论OK，但洞察→落地不够具体，下次要直接说产品改动和验证方式。",
+  notes: "复盘：方法论回答是OK的，但在“如何把用户洞察转成具体产品/运营决策”上不够落地，偏概念。下次需要给更具体的动作（例如：改哪个入口、改哪个推荐逻辑、怎么验证效果）。",
   closedReason: "rejected",
   closedAt: "2026-04-26",
   createdAt: Date.now() - 4000,
-}
-function FunnelAnalysis({ apps }) {
-  const applied = apps.filter(a => a.stage !== "wishlist").length;
-
-  const interview = apps.filter(a =>
-    a.interviewRounds?.some(r => r.name.includes("面"))
-  ).length;
-
-  const offer = apps.filter(a =>
-    a.stage === "offer" || a.closedReason === "offer_accepted"
-  ).length;
-
-  const rate = (current, previous) =>
-    previous === 0 ? "-" : Math.round((current / previous) * 100) + "%";
-
-  const steps = [
-    { label: "投递", value: applied },
-    { label: "面试", value: interview, rate: rate(interview, applied) },
-    { label: "Offer", value: offer, rate: rate(offer, interview) },
-  ];
-
-  return (
-    <div className="glass" style={{
-      border: `1px solid ${P.border}`,
-      borderRadius: 20,
-      padding: "18px 20px",
-      marginBottom: 24,
-      boxShadow: "0 14px 32px rgba(0,0,0,0.16)"
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 12, flexWrap: "wrap" }}>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: P.text }}>转化分析</div>
-          <div style={{ fontSize: 11, color: P.textMuted, marginTop: 4 }}>
-            用更直观的方式看申请进展和转化情况。
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "stretch", gap: 10, flexWrap: "wrap" }}>
-        {steps.map((step, index) => (
-          <React.Fragment key={step.label}>
-            <div style={{
-              flex: 1,
-              minWidth: 140,
-              borderRadius: 16,
-              padding: "16px 14px",
-              background: "rgba(255,255,255,0.03)",
-              border: `1px solid ${P.border}`,
-              textAlign: "center"
-            }}>
-              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: MONO, color: P.text }}>
-                {step.value}
-              </div>
-              <div style={{ fontSize: 12, color: P.textSecondary, marginTop: 6 }}>
-                {step.label}
-              </div>
-              {step.rate && (
-                <div style={{
-                  display: "inline-block",
-                  marginTop: 8,
-                  padding: "4px 8px",
-                  borderRadius: 999,
-                  fontSize: 11,
-                  color: P.accent,
-                  background: P.accentSoft,
-                  border: `1px solid ${P.accentBorder}`
-                }}>
-                  {step.rate}
-                </div>
-              )}
-            </div>
-
-            {index < steps.length - 1 && (
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: P.textMuted,
-                fontSize: 18,
-                padding: "0 2px"
-              }}>
-                →
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
-}
+ }
 ];
 
 function loadData() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch {} return null; }
@@ -367,28 +278,7 @@ function StatsDashboard({ apps }) {
     </div>
   );
 }
-function FunnelAnalysis({ apps }) {
-  const applied = apps.filter(a => a.stage !== "wishlist").length;
 
-  const interview = apps.filter(a =>
-    a.interviewRounds?.some(r => r.name.includes("面"))
-  ).length;
-
-  const offer = apps.filter(a =>
-    a.stage === "offer" || a.closedReason === "offer_accepted"
-  ).length;
-
-  const rate = (current, previous) =>
-    previous === 0 ? "-" : Math.round((current / previous) * 100) + "%";
-
-  const steps = [
-    { label: "投递", value: applied },
-    { label: "面试", value: interview, rate: rate(interview, applied) },
-    { label: "Offer", value: offer, rate: rate(offer, interview) },
-  ];
-
-  return (/* UI 不变 */);
-}
 function PriorityBadge({ priority, small }) {
   const c = PRIORITY_CONFIG[priority]; if (!c) return null;
   return (
@@ -932,7 +822,6 @@ function JobTracker() {
           </div>
         </div>
         <StatsDashboard apps={apps} />
-        <FunnelAnalysis apps={apps} />
         <FilterBar filter={filter} setFilter={setFilter} sortBy={sortBy} setSortBy={setSortBy} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div style={{ display: "flex", gap: 18, overflowX: "auto", padding: "4px 2px 24px", minHeight: 420 }}>
         {DEFAULT_COLUMNS.map(col => <KanbanColumn key={col.id} column={col} apps={filteredApps.filter(a => a.stage === col.id)} onCardClick={setSelectedApp} onDrop={handleDrop} onDragStart={setDraggingId} onAddClick={handleAdd} />)}
