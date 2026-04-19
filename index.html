@@ -280,17 +280,22 @@ function StatsDashboard({ apps }) {
   );
 }
 function FunnelAnalysis({ apps }) {
-  const applied = apps.filter(a => a.stage !== "wishlist").length;
-  const assessment = apps.filter(a => a.stage === "assessment" || a.stage === "interview" || a.stage === "offer" || a.stage === "closed").length;
-  const interview = apps.filter(a => a.stage === "interview" || a.stage === "offer" || a.stage === "closed").length;
-  const offer = apps.filter(a => a.stage === "offer").length;
+  const applied = apps.length;
 
-  const rate = (a, b) => b === 0 ? "-" : Math.round((a / b) * 100) + "%";
+  const interview = apps.filter(a =>
+    a.interviewRounds?.some(r => r.name.includes("面"))
+  ).length;
+
+  const offer = apps.filter(a =>
+    a.stage === "offer" || a.closedReason === "offer_accepted"
+  ).length;
+
+  const rate = (current, previous) =>
+    previous === 0 ? "-" : Math.round((current / previous) * 100) + "%";
 
   const steps = [
     { label: "投递", value: applied },
-    { label: "笔试", value: assessment, rate: rate(assessment, applied) },
-    { label: "面试", value: interview, rate: rate(interview, assessment) },
+    { label: "面试", value: interview, rate: rate(interview, applied) },
     { label: "Offer", value: offer, rate: rate(offer, interview) },
   ];
 
@@ -299,31 +304,63 @@ function FunnelAnalysis({ apps }) {
       border: `1px solid ${P.border}`,
       borderRadius: 20,
       padding: "18px 20px",
-      marginBottom: 24
+      marginBottom: 24,
+      boxShadow: "0 14px 32px rgba(0,0,0,0.16)"
     }}>
-      <div style={{ fontSize: 12, color: P.textMuted, marginBottom: 12 }}>
-        转化分析（Funnel）
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: P.text }}>转化分析</div>
+          <div style={{ fontSize: 11, color: P.textMuted, marginTop: 4 }}>
+            用更直观的方式看申请进展和转化情况。
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        {steps.map((s, i) => (
-          <React.Fragment key={s.label}>
-            <div style={{ textAlign: "center", flex: 1 }}>
-              <div style={{ fontSize: 20, fontWeight: 700, fontFamily: MONO }}>
-                {s.value}
+      <div style={{ display: "flex", alignItems: "stretch", gap: 10, flexWrap: "wrap" }}>
+        {steps.map((step, index) => (
+          <React.Fragment key={step.label}>
+            <div style={{
+              flex: 1,
+              minWidth: 140,
+              borderRadius: 16,
+              padding: "16px 14px",
+              background: "rgba(255,255,255,0.03)",
+              border: `1px solid ${P.border}`,
+              textAlign: "center"
+            }}>
+              <div style={{ fontSize: 22, fontWeight: 700, fontFamily: MONO, color: P.text }}>
+                {step.value}
               </div>
-              <div style={{ fontSize: 11, color: P.textSecondary }}>
-                {s.label}
+              <div style={{ fontSize: 12, color: P.textSecondary, marginTop: 6 }}>
+                {step.label}
               </div>
-              {s.rate && (
-                <div style={{ fontSize: 11, color: P.accent, marginTop: 2 }}>
-                  {s.rate}
+              {step.rate && (
+                <div style={{
+                  display: "inline-block",
+                  marginTop: 8,
+                  padding: "4px 8px",
+                  borderRadius: 999,
+                  fontSize: 11,
+                  color: P.accent,
+                  background: P.accentSoft,
+                  border: `1px solid ${P.accentBorder}`
+                }}>
+                  {step.rate}
                 </div>
               )}
             </div>
 
-            {i < steps.length - 1 && (
-              <div style={{ color: P.textMuted }}>→</div>
+            {index < steps.length - 1 && (
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: P.textMuted,
+                fontSize: 18,
+                padding: "0 2px"
+              }}>
+                →
+              </div>
             )}
           </React.Fragment>
         ))}
