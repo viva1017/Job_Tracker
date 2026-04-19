@@ -10,15 +10,42 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0F1117; overflow-x: hidden; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  html, body { min-height: 100%; }
+  body {
+    background:
+      radial-gradient(circle at 15% 20%, rgba(108,140,255,0.18), transparent 28%),
+      radial-gradient(circle at 85% 10%, rgba(94,234,212,0.10), transparent 22%),
+      radial-gradient(circle at 50% 120%, rgba(168,85,247,0.12), transparent 28%),
+      linear-gradient(180deg, #0B0E14 0%, #0F1117 38%, #0B0E14 100%);
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.22), transparent 80%);
+  }
+  a { color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2D3148; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #383D56; }
-  select option { background: #1A1D27; color: #E8EAF0; }
+  ::-webkit-scrollbar-thumb { background: #2D3148; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #434963; }
+  select option { background: #161A24; color: #E8EAF0; }
+  .glass {
+    background: rgba(20, 24, 35, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
 </style>
+
 </head>
 <body>
 <div id="root"></div>
@@ -186,30 +213,6 @@ const SAMPLE_DATA = [
     closedAt: "",
     createdAt: Date.now() - 5000,
   },
-  {
-    id: "7",
-    company: "美团",
-    role: "品牌营销策划实习生",
-    priority: "P1",
-    stage: "closed",
-    deadline: "2026-03-28",
-    appliedDate: "2026-03-07",
-    source: "校招",
-    jdLink: "",
-    portalLink: "",
-    companyLink: "https://about.meituan.com/",
-    resumeVersion: "品牌版-IMC强化",
-    interviewRounds: [
-      { name: "网申", status: "done", date: "2026-03-07", notes: "" },
-      { name: "笔试", status: "done", date: "2026-03-13", notes: "品牌case" },
-      { name: "群面", status: "done", date: "2026-03-18", notes: "讨论年轻化营销" },
-      { name: "一面", status: "done", date: "2026-03-22", notes: "深挖项目数据" },
-    ],
-    notes: "复盘：表达和创意没问题，但缺数据支撑（转化率、ROI）；下次要明确目标用户+转化路径+效果指标，而不是只讲idea。",
-    closedReason: "rejected",
-    closedAt: "2026-03-25",
-    createdAt: Date.now() - 6000,
-  },
 ];
 
 function loadData() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch {} return null; }
@@ -223,12 +226,26 @@ function daysUntil(d) { if (!d) return null; return Math.ceil((new Date(d) - new
 const FONT = "'DM Sans', 'Noto Sans SC', system-ui, sans-serif";
 const MONO = "'JetBrains Mono', 'Fira Code', monospace";
 const P = {
-  bg: "#0F1117", surface: "#1A1D27", surfaceHover: "#22252F",
-  card: "#1E2130", cardHover: "#252838",
-  border: "#2D3148", borderLight: "#383D56",
-  text: "#E8EAF0", textSecondary: "#9499B3", textMuted: "#636882",
-  accent: "#6C8CFF", accentSoft: "rgba(108,140,255,0.12)", accentBorder: "rgba(108,140,255,0.25)",
-  danger: "#FF6B6B", success: "#51CF66", warning: "#FCC419",
+  bg: "#0B0E14",
+  bgSoft: "#10141D",
+  surface: "rgba(19, 24, 35, 0.82)",
+  surface2: "rgba(25, 30, 43, 0.92)",
+  surfaceHover: "rgba(29, 35, 49, 0.96)",
+  card: "rgba(24, 29, 41, 0.92)",
+  cardHover: "rgba(31, 36, 50, 0.98)",
+  border: "rgba(126, 139, 174, 0.16)",
+  borderLight: "rgba(126, 139, 174, 0.28)",
+  text: "#F4F7FB",
+  textSecondary: "#B7C0D9",
+  textMuted: "#7D86A2",
+  accent: "#7C9CFF",
+  accent2: "#5EEAD4",
+  accentSoft: "rgba(124,156,255,0.12)",
+  accentBorder: "rgba(124,156,255,0.32)",
+  danger: "#FF7B86",
+  success: "#4ADE80",
+  warning: "#FACC15",
+  shadow: "0 18px 50px rgba(0,0,0,0.28)",
 };
 
 // ============================================================
@@ -240,18 +257,43 @@ function StatsDashboard({ apps }) {
   const interviewCount = apps.filter(a => a.stage === "interview").length;
   const closedCount = apps.filter(a => a.stage === "closed").length;
   const stats = [
-    { label: "总申请", value: apps.length, color: P.accent },
-    { label: "进行中", value: activeCount, color: "#51CF66" },
-    { label: "面试中", value: interviewCount, color: "#FCC419" },
-    { label: "3天内截止", value: urgentCount, color: urgentCount > 0 ? "#FF6B6B" : P.textMuted },
-    { label: "已归档", value: closedCount, color: "#9F7AEA" },
+    { label: "总申请", value: apps.length, icon: "📋", hint: "All tracked", color: P.accent },
+    { label: "进行中", value: activeCount, icon: "⚡", hint: "Active", color: P.success },
+    { label: "面试中", value: interviewCount, icon: "🎯", hint: "Interviewing", color: P.warning },
+    { label: "即将截止", value: urgentCount, icon: "⏰", hint: "Within 3 days", color: urgentCount > 0 ? P.danger : P.textMuted },
+    { label: "已归档", value: closedCount, icon: "🗂️", hint: "Closed", color: "#B794F4" },
   ];
+
   return (
-    <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 24 }}>
       {stats.map(s => (
-        <div key={s.label} style={{ background: P.surface, border: `1px solid ${P.border}`, borderRadius: 10, padding: "12px 20px", minWidth: 100, flex: 1 }}>
-          <div style={{ fontSize: 11, color: P.textMuted, marginBottom: 4, letterSpacing: "0.5px", textTransform: "uppercase" }}>{s.label}</div>
-          <div style={{ fontSize: 26, fontWeight: 700, color: s.color, fontFamily: MONO }}>{s.value}</div>
+        <div key={s.label} className="glass" style={{
+          border: `1px solid ${P.border}`,
+          borderRadius: 20,
+          padding: "16px 18px",
+          boxShadow: P.shadow,
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          <div style={{
+            position: "absolute",
+            inset: "auto -18px -18px auto",
+            width: 88,
+            height: 88,
+            borderRadius: "50%",
+            background: `radial-gradient(circle, ${s.color}22 0%, transparent 70%)`
+          }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 11, color: P.textMuted, letterSpacing: "0.9px", textTransform: "uppercase" }}>{s.label}</div>
+              <div style={{ fontSize: 30, lineHeight: 1.1, marginTop: 8, fontWeight: 700, color: s.color, fontFamily: MONO }}>{s.value}</div>
+            </div>
+            <div style={{
+              width: 40, height: 40, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
+              background: `${s.color}18`, border: `1px solid ${s.color}33`, fontSize: 18
+            }}>{s.icon}</div>
+          </div>
+          <div style={{ fontSize: 12, color: P.textSecondary }}>{s.hint}</div>
         </div>
       ))}
     </div>
@@ -260,24 +302,62 @@ function StatsDashboard({ apps }) {
 
 function PriorityBadge({ priority, small }) {
   const c = PRIORITY_CONFIG[priority]; if (!c) return null;
-  return <span style={{ display: "inline-block", fontSize: small ? 10 : 11, fontWeight: 700, color: c.color, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 4, padding: small ? "1px 5px" : "2px 8px", letterSpacing: "0.3px", fontFamily: MONO }}>{c.label}</span>;
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: small ? 10 : 11,
+      fontWeight: 700,
+      color: c.color,
+      background: `${c.color}16`,
+      border: `1px solid ${c.color}36`,
+      borderRadius: 999,
+      padding: small ? "2px 7px" : "4px 10px",
+      letterSpacing: "0.3px",
+      fontFamily: MONO,
+      whiteSpace: "nowrap"
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.color, display: "inline-block" }} />
+      {c.label}
+    </span>
+  );
 }
 
 function DeadlineTag({ deadline }) {
   const d = daysUntil(deadline); if (d === null) return null;
-  let color = P.textMuted, text = "";
-  if (d < 0) { text = "已过期"; } else if (d === 0) { color = "#FF6B6B"; text = "今天截止！"; }
-  else if (d <= 3) { color = "#FF6B6B"; text = `${d}天后截止`; }
-  else if (d <= 7) { color = "#FCC419"; text = `${d}天后截止`; }
-  else { color = P.textSecondary; text = `${d}天后`; }
-  return <span style={{ fontSize: 11, color, fontFamily: MONO, fontWeight: d <= 3 ? 700 : 400 }}>⏰ {text}</span>;
+  let color = P.textMuted, text = "", bg = "rgba(125,134,162,0.12)";
+  if (d < 0) { text = "已过期"; bg = "rgba(255,123,134,0.14)"; color = P.danger; }
+  else if (d === 0) { color = P.danger; bg = "rgba(255,123,134,0.14)"; text = "今天截止"; }
+  else if (d <= 3) { color = P.danger; bg = "rgba(255,123,134,0.14)"; text = `${d}天后截止`; }
+  else if (d <= 7) { color = P.warning; bg = "rgba(250,204,21,0.12)"; text = `${d}天后截止`; }
+  else { color = P.textSecondary; bg = "rgba(125,134,162,0.12)"; text = `${d}天后`; }
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, color, fontFamily: MONO,
+      fontWeight: d <= 3 ? 700 : 500, background: bg, padding: "4px 8px", borderRadius: 999, border: `1px solid ${color}22`
+    }}>⏰ {text}</span>
+  );
 }
 
 function InterviewProgressMini({ rounds }) {
   if (!rounds || !rounds.length) return null;
   return (
-    <div style={{ display: "flex", gap: 3, alignItems: "center", marginTop: 6 }}>
-      {rounds.map((r, i) => <div key={i} title={r.name} style={{ width: 18, height: 5, borderRadius: 3, background: r.status === "done" ? P.success : r.status === "current" ? P.accent : P.border, opacity: r.status === "done" ? 0.7 : 1 }} />)}
+    <div style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 8 }}>
+      {rounds.map((r, i) => (
+        <div
+          key={i}
+          title={r.name}
+          style={{
+            width: 22,
+            height: 6,
+            borderRadius: 999,
+            background: r.status === "done" ? P.success : r.status === "current" ? P.accent : "rgba(255,255,255,0.10)",
+            opacity: r.status === "done" ? 0.9 : 1,
+            boxShadow: r.status === "current" ? `0 0 0 3px ${P.accentSoft}` : "none"
+          }}
+        />
+      ))}
       <span style={{ fontSize: 10, color: P.textMuted, marginLeft: 4 }}>{rounds.find(r => r.status === "current")?.name || ""}</span>
     </div>
   );
@@ -287,15 +367,15 @@ function JourneyTimeline({ rounds, closedReason }) {
   if (!rounds || !rounds.length) return null;
   const rc = CLOSED_REASONS.find(r => r.id === closedReason);
   return (
-    <div style={{ marginTop: 8, padding: "8px 0 2px 0" }}>
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${P.border}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
         {rounds.map((r, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 10, color: r.status === "done" ? P.success : P.textMuted, fontWeight: 500, whiteSpace: "nowrap" }}>{r.name}</span>
+            <span style={{ fontSize: 10, color: r.status === "done" ? P.success : P.textMuted, fontWeight: 600, whiteSpace: "nowrap" }}>{r.name}</span>
             {i < rounds.length - 1 && <span style={{ fontSize: 9, color: P.textMuted }}>→</span>}
           </div>
         ))}
-        {rc && (<><span style={{ fontSize: 9, color: P.textMuted }}>→</span><span style={{ fontSize: 10, fontWeight: 600, color: rc.color, whiteSpace: "nowrap" }}>{rc.icon} {rc.label}</span></>)}
+        {rc && (<><span style={{ fontSize: 9, color: P.textMuted }}>→</span><span style={{ fontSize: 10, fontWeight: 700, color: rc.color, whiteSpace: "nowrap" }}>{rc.icon} {rc.label}</span></>)}
       </div>
     </div>
   );
@@ -303,27 +383,66 @@ function JourneyTimeline({ rounds, closedReason }) {
 
 function KanbanCard({ app, onClick, onDragStart }) {
   const [hover, setHover] = useState(false);
+  const currentRound = app.interviewRounds?.find(r => r.status === "current")?.name;
+  const firstNote = app.notes ? app.notes.replace(/^核心准备：/, "").split("；")[0].slice(0, 52) : "";
   return (
-    <div draggable onDragStart={e => { e.dataTransfer.setData("text/plain", app.id); onDragStart(app.id); }}
-      onClick={() => onClick(app)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ background: hover ? P.cardHover : P.card, border: `1px solid ${hover ? P.borderLight : P.border}`, borderRadius: 10, padding: "14px 16px", cursor: "grab", transition: "all 0.15s ease", borderLeft: `3px solid ${PRIORITY_CONFIG[app.priority]?.color || P.border}` }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: P.text, lineHeight: 1.3 }}>{app.company}</div>
+    <div
+      draggable
+      onDragStart={e => { e.dataTransfer.setData("text/plain", app.id); onDragStart(app.id); }}
+      onClick={() => onClick(app)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="glass"
+      style={{
+        background: hover ? P.cardHover : P.card,
+        border: `1px solid ${hover ? P.borderLight : P.border}`,
+        borderRadius: 18,
+        padding: "16px",
+        cursor: "grab",
+        transition: "all 0.18s ease",
+        boxShadow: hover ? "0 18px 42px rgba(0,0,0,0.30)" : "0 10px 22px rgba(0,0,0,0.18)",
+        transform: hover ? "translateY(-2px)" : "translateY(0px)",
+        position: "relative",
+        overflow: "hidden"
+      }}
+    >
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+        background: `linear-gradient(180deg, ${PRIORITY_CONFIG[app.priority]?.color || P.accent}12 0%, transparent 32%)`
+      }} />
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: PRIORITY_CONFIG[app.priority]?.color || P.accent }} />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 10, position: "relative" }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: P.text, lineHeight: 1.2, marginBottom: 4 }}>{app.company}</div>
+          <div style={{ fontSize: 12, color: P.textSecondary }}>{app.role}</div>
+        </div>
         <PriorityBadge priority={app.priority} small />
       </div>
-      <div style={{ fontSize: 12, color: P.textSecondary, marginBottom: 8 }}>{app.role}</div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, position: "relative" }}>
         {app.stage === "closed" ? (() => {
           const rc = CLOSED_REASONS.find(r => r.id === app.closedReason);
-          return rc ? <span style={{ fontSize: 11, fontWeight: 600, color: rc.color }}>{rc.icon} {rc.label}</span>
+          return rc ? <span style={{ fontSize: 11, fontWeight: 600, color: rc.color, background: `${rc.color}14`, border: `1px solid ${rc.color}24`, padding: "4px 8px", borderRadius: 999 }}>{rc.icon} {rc.label}</span>
             : <span style={{ fontSize: 11, color: P.textMuted }}>未标注结果</span>;
         })() : <DeadlineTag deadline={app.deadline} />}
-        {app.source && <span style={{ fontSize: 10, color: P.textMuted, background: P.surface, padding: "2px 6px", borderRadius: 4 }}>{app.source}</span>}
+        {app.source && <span style={{ fontSize: 11, color: P.textSecondary, background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 999, border: `1px solid ${P.border}` }}>#{app.source}</span>}
+        {currentRound && app.stage !== "closed" && <span style={{ fontSize: 11, color: P.accent2, background: "rgba(94,234,212,0.08)", padding: "4px 8px", borderRadius: 999, border: "1px solid rgba(94,234,212,0.18)" }}>正在 {currentRound}</span>}
       </div>
-      {app.stage === "closed" ? <JourneyTimeline rounds={app.interviewRounds} closedReason={app.closedReason} />
-        : <InterviewProgressMini rounds={app.interviewRounds} />}
+
+      {app.stage === "closed" ? <JourneyTimeline rounds={app.interviewRounds} closedReason={app.closedReason} /> : <InterviewProgressMini rounds={app.interviewRounds} />}
+
+      {firstNote && app.stage !== "closed" && (
+        <div style={{ marginTop: 10, fontSize: 11, color: P.textMuted, lineHeight: 1.5 }}>
+          {firstNote}...
+        </div>
+      )}
+
       {app.resumeVersion && app.stage !== "closed" && (
-        <div style={{ fontSize: 10, color: P.textMuted, marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}><span>📄</span> {app.resumeVersion}</div>
+        <div style={{ fontSize: 10, color: P.textMuted, marginTop: 10, display: "flex", alignItems: "center", gap: 6 }}>
+          <span>📄</span> {app.resumeVersion}
+        </div>
       )}
     </div>
   );
@@ -339,22 +458,58 @@ function KanbanColumn({ column, apps, onCardClick, onDrop, onDragStart, onAddCli
     return da - db;
   });
   return (
-    <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)}
+    <div
+      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
       onDrop={e => { e.preventDefault(); setDragOver(false); onDrop(e.dataTransfer.getData("text/plain"), column.id); }}
-      style={{ flex: "0 0 280px", display: "flex", flexDirection: "column", maxHeight: "100%" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, padding: "0 4px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 16 }}>{column.icon}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: P.text }}>{column.title}</span>
-          <span style={{ fontSize: 11, color: P.textMuted, background: P.surface, borderRadius: 10, padding: "1px 7px", fontFamily: MONO, fontWeight: 600 }}>{apps.length}</span>
+      className="glass"
+      style={{
+        flex: "0 0 300px",
+        display: "flex",
+        flexDirection: "column",
+        maxHeight: "100%",
+        borderRadius: 22,
+        border: `1px solid ${dragOver ? P.accentBorder : P.border}`,
+        background: dragOver ? "rgba(124,156,255,0.08)" : P.surface,
+        boxShadow: "0 18px 38px rgba(0,0,0,0.16)",
+        minHeight: 420
+      }}
+    >
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "16px 16px 12px 16px", position: "sticky", top: 0, zIndex: 2,
+        background: "linear-gradient(180deg, rgba(19,24,35,0.98) 0%, rgba(19,24,35,0.82) 100%)",
+        borderBottom: `1px solid ${P.border}`
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 18 }}>{column.icon}</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: P.text }}>{column.title}</div>
+            <div style={{ fontSize: 10, color: P.textMuted, marginTop: 2 }}>{apps.length} items</div>
+          </div>
         </div>
-        <button onClick={() => onAddClick(column.id)}
-          style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${P.border}`, background: "transparent", color: P.textMuted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, lineHeight: 1, transition: "all 0.15s" }}
-          onMouseEnter={e => { e.target.style.borderColor = P.accent; e.target.style.color = P.accent; }}
-          onMouseLeave={e => { e.target.style.borderColor = P.border; e.target.style.color = P.textMuted; }}>+</button>
+        <button
+          onClick={() => onAddClick(column.id)}
+          style={{
+            width: 30, height: 30, borderRadius: 10, border: `1px solid ${P.border}`,
+            background: "rgba(255,255,255,0.03)", color: P.textSecondary, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, lineHeight: 1,
+            transition: "all 0.15s"
+          }}
+          onMouseEnter={e => { e.target.style.borderColor = P.accent; e.target.style.color = P.accent; e.target.style.background = P.accentSoft; }}
+          onMouseLeave={e => { e.target.style.borderColor = P.border; e.target.style.color = P.textSecondary; e.target.style.background = "rgba(255,255,255,0.03)"; }}
+        >+</button>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, padding: 4, borderRadius: 10, background: dragOver ? "rgba(108,140,255,0.06)" : "transparent", border: dragOver ? `1px dashed ${P.accent}` : "1px dashed transparent", transition: "all 0.2s", minHeight: 80 }}>
+      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12, padding: 14, minHeight: 80 }}>
         {sorted.map(app => <KanbanCard key={app.id} app={app} onClick={onCardClick} onDragStart={onDragStart} />)}
+        {!sorted.length && (
+          <div style={{
+            border: `1px dashed ${P.borderLight}`, borderRadius: 18, minHeight: 120, display: "flex",
+            alignItems: "center", justifyContent: "center", color: P.textMuted, fontSize: 12
+          }}>
+            暂无卡片
+          </div>
+        )}
       </div>
     </div>
   );
@@ -365,7 +520,7 @@ function DetailPanel({ app, onClose, onSave, onDelete }) {
   const [activeTab, setActiveTab] = useState("info");
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const inputStyle = { width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${P.border}`, background: P.surface, color: P.text, fontSize: 13, fontFamily: FONT, outline: "none", boxSizing: "border-box" };
+  const inputStyle = { width: "100%", padding: "9px 11px", borderRadius: 10, border: `1px solid ${P.border}`, background: "rgba(255,255,255,0.03)", color: P.text, fontSize: 13, fontFamily: FONT, outline: "none", boxSizing: "border-box" };
   const labelStyle = { fontSize: 11, color: P.textMuted, marginBottom: 4, display: "block", letterSpacing: "0.3px" };
   const tabs = [{ id: "info", label: "基本信息" }, { id: "links", label: "链接" }, { id: "interview", label: "面试轮次" }, { id: "notes", label: "笔记" }];
 
@@ -379,7 +534,7 @@ function DetailPanel({ app, onClose, onSave, onDelete }) {
   const removeRound = idx => { const r = [...form.interviewRounds]; r.splice(idx, 1); update("interviewRounds", r); };
 
   return (
-    <div style={{ position: "fixed", top: 0, right: 0, width: 480, maxWidth: "100vw", height: "100vh", background: P.bg, borderLeft: `1px solid ${P.border}`, zIndex: 1000, display: "flex", flexDirection: "column", boxShadow: "-8px 0 30px rgba(0,0,0,0.4)" }}>
+    <div className="glass" style={{ position: "fixed", top: 0, right: 0, width: 500, maxWidth: "100vw", height: "100vh", background: "rgba(11,14,20,0.92)", borderLeft: `1px solid ${P.border}`, zIndex: 1000, display: "flex", flexDirection: "column", boxShadow: "-18px 0 60px rgba(0,0,0,0.42)" }}>
       {/* Header */}
       <div style={{ padding: "16px 20px", borderBottom: `1px solid ${P.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{flex:1}}>
@@ -533,23 +688,71 @@ function DetailPanel({ app, onClose, onSave, onDelete }) {
 }
 
 function Backdrop({ onClick }) {
-  return <div onClick={onClick} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.5)", zIndex: 999 }} />;
+  return <div onClick={onClick} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(4,6,10,0.62)", backdropFilter: "blur(4px)", zIndex: 999 }} />;
 }
 
 function FilterBar({ filter, setFilter, sortBy, setSortBy, searchQuery, setSearchQuery }) {
-  const btn = a => ({ padding: "5px 12px", borderRadius: 6, border: `1px solid ${a ? P.accentBorder : P.border}`, background: a ? P.accentSoft : "transparent", color: a ? P.accent : P.textMuted, fontSize: 12, cursor: "pointer", fontWeight: a ? 600 : 400, fontFamily: FONT, transition: "all 0.15s" });
+  const btn = a => ({
+    padding: "7px 14px",
+    borderRadius: 999,
+    border: `1px solid ${a ? P.accentBorder : P.border}`,
+    background: a ? P.accentSoft : "rgba(255,255,255,0.03)",
+    color: a ? P.accent : P.textSecondary,
+    fontSize: 12,
+    cursor: "pointer",
+    fontWeight: a ? 700 : 500,
+    fontFamily: FONT,
+    transition: "all 0.15s"
+  });
   return (
-    <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
-      <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="搜索公司 / 岗位..."
-        style={{ padding: "6px 12px", borderRadius: 6, border: `1px solid ${P.border}`, background: P.surface, color: P.text, fontSize: 12, fontFamily: FONT, outline: "none", width: 180 }} />
-      <div style={{ width: 1, height: 20, background: P.border, margin: "0 4px" }} />
-      <button style={btn(filter === "all")} onClick={() => setFilter("all")}>全部</button>
-      <button style={btn(filter === "P0")} onClick={() => setFilter("P0")}>P0 冲刺</button>
-      <button style={btn(filter === "P1")} onClick={() => setFilter("P1")}>P1 重点</button>
-      <button style={btn(filter === "P2")} onClick={() => setFilter("P2")}>P2 保底</button>
+    <div className="glass" style={{
+      display: "flex", gap: 10, marginBottom: 18, alignItems: "center", flexWrap: "wrap",
+      padding: 12, borderRadius: 18, border: `1px solid ${P.border}`, boxShadow: "0 14px 32px rgba(0,0,0,0.16)"
+    }}>
+      <div style={{ position: "relative" }}>
+        <span style={{ position: "absolute", left: 12, top: 8, fontSize: 12, color: P.textMuted }}>⌕</span>
+        <input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="搜索公司 / 岗位..."
+          style={{
+            padding: "8px 12px 8px 30px",
+            borderRadius: 12,
+            border: `1px solid ${P.border}`,
+            background: "rgba(255,255,255,0.03)",
+            color: P.text,
+            fontSize: 12,
+            fontFamily: FONT,
+            outline: "none",
+            width: 210
+          }}
+        />
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button style={btn(filter === "all")} onClick={() => setFilter("all")}>全部</button>
+        <button style={btn(filter === "P0")} onClick={() => setFilter("P0")}>P0 冲刺</button>
+        <button style={btn(filter === "P1")} onClick={() => setFilter("P1")}>P1 重点</button>
+        <button style={btn(filter === "P2")} onClick={() => setFilter("P2")}>P2 保底</button>
+      </div>
       <div style={{ flex: 1 }} />
-      <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ padding: "5px 10px", borderRadius: 6, border: `1px solid ${P.border}`, background: P.surface, color: P.textSecondary, fontSize: 12, fontFamily: FONT, cursor: "pointer", outline: "none" }}>
-        <option value="priority">按优先级排序</option><option value="deadline">按截止日期排序</option><option value="recent">按创建时间排序</option>
+      <select
+        value={sortBy}
+        onChange={e => setSortBy(e.target.value)}
+        style={{
+          padding: "8px 12px",
+          borderRadius: 12,
+          border: `1px solid ${P.border}`,
+          background: "rgba(255,255,255,0.03)",
+          color: P.textSecondary,
+          fontSize: 12,
+          fontFamily: FONT,
+          cursor: "pointer",
+          outline: "none"
+        }}
+      >
+        <option value="priority">按优先级排序</option>
+        <option value="deadline">按截止日期排序</option>
+        <option value="recent">按创建时间排序</option>
       </select>
     </div>
   );
@@ -583,19 +786,67 @@ function JobTracker() {
   };
 
   return (
-    <div style={{ fontFamily: FONT, background: P.bg, color: P.text, minHeight: "100vh", padding: "20px 24px", boxSizing: "border-box" }}>
-      <div style={{ marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-0.3px" }}><span style={{ opacity: 0.5, marginRight: 8 }}>📋</span>求职申请看板</h1>
-          <p style={{ fontSize: 12, color: P.textMuted, margin: "4px 0 0 0" }}>拖拽卡片更新阶段 · 点击卡片编辑详情</p>
+    <div style={{ fontFamily: FONT, color: P.text, minHeight: "100vh", padding: "28px 24px 34px", boxSizing: "border-box" }}>
+      <div style={{ maxWidth: 1540, margin: "0 auto" }}>
+        <div className="glass" style={{
+          marginBottom: 22,
+          borderRadius: 28,
+          border: `1px solid ${P.border}`,
+          padding: "26px 28px",
+          boxShadow: P.shadow,
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          <div style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            background: "linear-gradient(135deg, rgba(124,156,255,0.16) 0%, transparent 40%, rgba(94,234,212,0.08) 100%)"
+          }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20, flexWrap: "wrap", position: "relative" }}>
+            <div style={{ maxWidth: 820 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 999, background: "rgba(124,156,255,0.10)", border: `1px solid ${P.accentBorder}`, color: P.accent, fontSize: 12, fontWeight: 700, marginBottom: 14 }}>
+                <span>✨</span> Job Tracker
+              </div>
+              <h1 style={{ fontSize: 34, lineHeight: 1.12, fontWeight: 800, letterSpacing: "-0.8px", margin: 0 }}>
+                我的求职进度
+              </h1>
+              <p style={{ fontSize: 14, color: P.textSecondary, margin: "12px 0 0 0", lineHeight: 1.7, maxWidth: 760 }}>
+                让每一次投递和面试，都在掌控之中。
+              </p>
+            </div>
+            <div style={{
+              minWidth: 280,
+              flex: "0 0 320px",
+              borderRadius: 20,
+              padding: "16px 18px",
+              background: "rgba(255,255,255,0.04)",
+              border: `1px solid ${P.border}`,
+              alignSelf: "stretch"
+            }}>
+              <div style={{ fontSize: 11, color: P.textMuted, textTransform: "uppercase", letterSpacing: "0.9px", marginBottom: 10 }}>Quick snapshot</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div><div style={{ fontSize: 22, fontFamily: MONO, fontWeight: 700 }}>{apps.length}</div><div style={{ fontSize: 11, color: P.textMuted }}>applications</div></div>
+                <div><div style={{ fontSize: 22, fontFamily: MONO, fontWeight: 700 }}>{apps.filter(a => a.stage === "interview").length}</div><div style={{ fontSize: 11, color: P.textMuted }}>in interview</div></div>
+                <div><div style={{ fontSize: 22, fontFamily: MONO, fontWeight: 700 }}>{apps.filter(a => a.priority === "P0").length}</div><div style={{ fontSize: 11, color: P.textMuted }}>P0 roles</div></div>
+                <div><div style={{ fontSize: 22, fontFamily: MONO, fontWeight: 700 }}>{apps.filter(a => a.stage === "closed").length}</div><div style={{ fontSize: 11, color: P.textMuted }}>archived</div></div>
+              </div>
+              <button
+                onClick={() => { if (confirm("确认重置所有数据为示例数据？")) setApps(SAMPLE_DATA); }}
+                style={{
+                  marginTop: 14, width: "100%", padding: "10px 12px", borderRadius: 12,
+                  border: `1px solid ${P.border}`, background: "rgba(255,255,255,0.03)",
+                  color: P.textSecondary, fontSize: 12, cursor: "pointer", fontFamily: FONT
+                }}
+              >
+                重置示例数据
+              </button>
+            </div>
+          </div>
         </div>
-        <button onClick={() => { if (confirm("确认重置所有数据为示例数据？")) setApps(SAMPLE_DATA); }}
-          style={{ padding: "6px 12px", borderRadius: 6, border: `1px solid ${P.border}`, background: "transparent", color: P.textMuted, fontSize: 11, cursor: "pointer", fontFamily: FONT }}>重置示例数据</button>
-      </div>
-      <StatsDashboard apps={apps} />
-      <FilterBar filter={filter} setFilter={setFilter} sortBy={sortBy} setSortBy={setSortBy} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 20, minHeight: 400 }}>
+        <StatsDashboard apps={apps} />
+        <FilterBar filter={filter} setFilter={setFilter} sortBy={sortBy} setSortBy={setSortBy} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <div style={{ display: "flex", gap: 18, overflowX: "auto", padding: "4px 2px 24px", minHeight: 420 }}>
         {DEFAULT_COLUMNS.map(col => <KanbanColumn key={col.id} column={col} apps={filteredApps.filter(a => a.stage === col.id)} onCardClick={setSelectedApp} onDrop={handleDrop} onDragStart={setDraggingId} onAddClick={handleAdd} />)}
+      </div>
       </div>
       {selectedApp && (<><Backdrop onClick={() => setSelectedApp(null)} /><DetailPanel app={selectedApp} onClose={() => setSelectedApp(null)} onSave={handleSave} onDelete={handleDelete} /></>)}
     </div>
