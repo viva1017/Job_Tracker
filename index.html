@@ -192,93 +192,6 @@ const SAMPLE_DATA = [
   closedAt: "2026-04-26",
   createdAt: Date.now() - 4000,
 }
-
-];
-
-function loadData() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch {} return null; }
-function saveData(a) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); } catch {} }
-function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-function daysUntil(d) { if (!d) return null; return Math.ceil((new Date(d) - new Date()) / 86400000); }
-
-// ============================================================
-// STYLES
-// ============================================================
-const FONT = "'DM Sans', 'Noto Sans SC', system-ui, sans-serif";
-const MONO = "'JetBrains Mono', 'Fira Code', monospace";
-const P = {
-  bg: "#0B0E14",
-  bgSoft: "#10141D",
-  surface: "rgba(19, 24, 35, 0.82)",
-  surface2: "rgba(25, 30, 43, 0.92)",
-  surfaceHover: "rgba(29, 35, 49, 0.96)",
-  card: "rgba(24, 29, 41, 0.92)",
-  cardHover: "rgba(31, 36, 50, 0.98)",
-  border: "rgba(126, 139, 174, 0.16)",
-  borderLight: "rgba(126, 139, 174, 0.28)",
-  text: "#F4F7FB",
-  textSecondary: "#B7C0D9",
-  textMuted: "#7D86A2",
-  accent: "#7C9CFF",
-  accent2: "#5EEAD4",
-  accentSoft: "rgba(124,156,255,0.12)",
-  accentBorder: "rgba(124,156,255,0.32)",
-  danger: "#FF7B86",
-  success: "#4ADE80",
-  warning: "#FACC15",
-  shadow: "0 18px 50px rgba(0,0,0,0.28)",
-};
-
-// ============================================================
-// COMPONENTS
-// ============================================================
-function StatsDashboard({ apps }) {
-  const urgentCount = apps.filter(a => { const d = daysUntil(a.deadline); return d !== null && d >= 0 && d <= 3 && a.stage !== "closed"; }).length;
-  const activeCount = apps.filter(a => a.stage !== "closed" && a.stage !== "wishlist").length;
-  const interviewCount = apps.filter(a => a.stage === "interview").length;
-  const closedCount = apps.filter(a => a.stage === "closed").length;
-  const stats = [
-    { label: "总申请", value: apps.length, icon: "📋", hint: "All tracked", color: P.accent },
-    { label: "进行中", value: activeCount, icon: "⚡", hint: "Active", color: P.success },
-    { label: "面试中", value: interviewCount, icon: "🎯", hint: "Interviewing", color: P.warning },
-    { label: "即将截止", value: urgentCount, icon: "⏰", hint: "Within 3 days", color: urgentCount > 0 ? P.danger : P.textMuted },
-    { label: "已归档", value: closedCount, icon: "🗂️", hint: "Closed", color: "#B794F4" },
-  ];
-
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 24 }}>
-      {stats.map(s => (
-        <div key={s.label} className="glass" style={{
-          border: `1px solid ${P.border}`,
-          borderRadius: 20,
-          padding: "16px 18px",
-          boxShadow: P.shadow,
-          position: "relative",
-          overflow: "hidden"
-        }}>
-          <div style={{
-            position: "absolute",
-            inset: "auto -18px -18px auto",
-            width: 88,
-            height: 88,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${s.color}22 0%, transparent 70%)`
-          }} />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-            <div>
-              <div style={{ fontSize: 11, color: P.textMuted, letterSpacing: "0.9px", textTransform: "uppercase" }}>{s.label}</div>
-              <div style={{ fontSize: 30, lineHeight: 1.1, marginTop: 8, fontWeight: 700, color: s.color, fontFamily: MONO }}>{s.value}</div>
-            </div>
-            <div style={{
-              width: 40, height: 40, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
-              background: `${s.color}18`, border: `1px solid ${s.color}33`, fontSize: 18
-            }}>{s.icon}</div>
-          </div>
-          <div style={{ fontSize: 12, color: P.textSecondary }}>{s.hint}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
 function FunnelAnalysis({ apps }) {
   const applied = apps.length;
 
@@ -367,6 +280,114 @@ function FunnelAnalysis({ apps }) {
       </div>
     </div>
   );
+}
+];
+
+function loadData() { try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch {} return null; }
+function saveData(a) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); } catch {} }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function daysUntil(d) { if (!d) return null; return Math.ceil((new Date(d) - new Date()) / 86400000); }
+
+// ============================================================
+// STYLES
+// ============================================================
+const FONT = "'DM Sans', 'Noto Sans SC', system-ui, sans-serif";
+const MONO = "'JetBrains Mono', 'Fira Code', monospace";
+const P = {
+  bg: "#0B0E14",
+  bgSoft: "#10141D",
+  surface: "rgba(19, 24, 35, 0.82)",
+  surface2: "rgba(25, 30, 43, 0.92)",
+  surfaceHover: "rgba(29, 35, 49, 0.96)",
+  card: "rgba(24, 29, 41, 0.92)",
+  cardHover: "rgba(31, 36, 50, 0.98)",
+  border: "rgba(126, 139, 174, 0.16)",
+  borderLight: "rgba(126, 139, 174, 0.28)",
+  text: "#F4F7FB",
+  textSecondary: "#B7C0D9",
+  textMuted: "#7D86A2",
+  accent: "#7C9CFF",
+  accent2: "#5EEAD4",
+  accentSoft: "rgba(124,156,255,0.12)",
+  accentBorder: "rgba(124,156,255,0.32)",
+  danger: "#FF7B86",
+  success: "#4ADE80",
+  warning: "#FACC15",
+  shadow: "0 18px 50px rgba(0,0,0,0.28)",
+};
+
+// ============================================================
+// COMPONENTS
+// ============================================================
+function StatsDashboard({ apps }) {
+  const urgentCount = apps.filter(a => { const d = daysUntil(a.deadline); return d !== null && d >= 0 && d <= 3 && a.stage !== "closed"; }).length;
+  const activeCount = apps.filter(a => a.stage !== "closed" && a.stage !== "wishlist").length;
+  const interviewCount = apps.filter(a => a.stage === "interview").length;
+  const closedCount = apps.filter(a => a.stage === "closed").length;
+  const stats = [
+    { label: "总申请", value: apps.length, icon: "📋", hint: "All tracked", color: P.accent },
+    { label: "进行中", value: activeCount, icon: "⚡", hint: "Active", color: P.success },
+    { label: "面试中", value: interviewCount, icon: "🎯", hint: "Interviewing", color: P.warning },
+    { label: "即将截止", value: urgentCount, icon: "⏰", hint: "Within 3 days", color: urgentCount > 0 ? P.danger : P.textMuted },
+    { label: "已归档", value: closedCount, icon: "🗂️", hint: "Closed", color: "#B794F4" },
+  ];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 24 }}>
+      {stats.map(s => (
+        <div key={s.label} className="glass" style={{
+          border: `1px solid ${P.border}`,
+          borderRadius: 20,
+          padding: "16px 18px",
+          boxShadow: P.shadow,
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          <div style={{
+            position: "absolute",
+            inset: "auto -18px -18px auto",
+            width: 88,
+            height: 88,
+            borderRadius: "50%",
+            background: `radial-gradient(circle, ${s.color}22 0%, transparent 70%)`
+          }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 11, color: P.textMuted, letterSpacing: "0.9px", textTransform: "uppercase" }}>{s.label}</div>
+              <div style={{ fontSize: 30, lineHeight: 1.1, marginTop: 8, fontWeight: 700, color: s.color, fontFamily: MONO }}>{s.value}</div>
+            </div>
+            <div style={{
+              width: 40, height: 40, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
+              background: `${s.color}18`, border: `1px solid ${s.color}33`, fontSize: 18
+            }}>{s.icon}</div>
+          </div>
+          <div style={{ fontSize: 12, color: P.textSecondary }}>{s.hint}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+function FunnelAnalysis({ apps }) {
+  const applied = apps.filter(a => a.stage !== "wishlist").length;
+
+  const interview = apps.filter(a =>
+    a.interviewRounds?.some(r => r.name.includes("面"))
+  ).length;
+
+  const offer = apps.filter(a =>
+    a.stage === "offer" || a.closedReason === "offer_accepted"
+  ).length;
+
+  const rate = (current, previous) =>
+    previous === 0 ? "-" : Math.round((current / previous) * 100) + "%";
+
+  const steps = [
+    { label: "投递", value: applied },
+    { label: "面试", value: interview, rate: rate(interview, applied) },
+    { label: "Offer", value: offer, rate: rate(offer, interview) },
+  ];
+
+  return (/* UI 不变 */);
 }
 function PriorityBadge({ priority, small }) {
   const c = PRIORITY_CONFIG[priority]; if (!c) return null;
